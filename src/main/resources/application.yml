@@ -1,0 +1,15 @@
+spring:
+
+    # dataSource config
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/jinsz
+    username: root
+    password: 123456
+
+server:
+  port: 8080
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
