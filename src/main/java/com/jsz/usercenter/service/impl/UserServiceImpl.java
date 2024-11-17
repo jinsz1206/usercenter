@@ -8,9 +8,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.jsz.usercenter.model.domain.User;
 import com.jsz.usercenter.service.UserService;
 import com.jsz.usercenter.mapper.UserMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 
 /**
@@ -19,8 +21,11 @@ import javax.annotation.Resource;
 * @createDate 2024-11-14 16:23:07
 */
 @Service
+@Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     implements UserService{
+
+    private static final String USER_LOGIN_STATE = "user_login_state";
 
     private static final String SALT = "jsz";
 
@@ -33,7 +38,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
         //内容为空
-        if(StrUtil.isAllBlank(userAccount, userPassword, checkPassword)){
+        if(!StrUtil.hasBlank(userAccount, userPassword, checkPassword)){
             return -1;
         }
         //用户名长度
@@ -62,6 +67,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", userAccount);
         long count = userMapper.selectCount(queryWrapper);
+
         if(count > 0){
             return -1;
         }
@@ -81,7 +87,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public User doLogin(String userAccount, String userPassword) {
+    public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         //1. 校验
 
 
@@ -108,12 +114,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String encryptPassWord = DigestUtil.md5Hex(bytes);
 
 
+        //查询用户存在
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userAccount", userAccount);
+        queryWrapper.eq("userPassword", encryptPassWord);
+        User user = userMapper.selectOne(queryWrapper);
+        if(user == null){
+            log.info("user login failed");
+            return null;
+        }
+
+        //用户脱敏
+        User safetyUser = new User();
+        safetyUser.setId(user.getId());
+        safetyUser.setUserAccount(user.getUserAccount());
+        safetyUser.setUserName(user.getUserName());
+        safetyUser.setUserAvatar(user.getUserAvatar());
+        safetyUser.setUserGender(user.getUserGender());
+        safetyUser.setUserProfile(user.getUserProfile());
+        safetyUser.setUserRole(user.getUserRole());
+        safetyUser.setCreateTime(user.getCreateTime());
+        safetyUser.setUpdateTime(user.getUpdateTime());
+        safetyUser.setUserGender(user.getUserGender());
+
+        //用户登录状态
+        request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
 
 
 
-        return null;
+        return safetyUser;
     }
+
 }
+
 
 
 
