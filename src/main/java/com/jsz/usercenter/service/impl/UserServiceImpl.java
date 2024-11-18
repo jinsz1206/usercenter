@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import static com.jsz.usercenter.contant.UserConstant.USER_LOGIN_STATE;
+
 
 /**
 * @author ex_shengzhou.jin
@@ -25,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     implements UserService{
 
-    private static final String USER_LOGIN_STATE = "user_login_state";
+
 
     private static final String SALT = "jsz";
 
@@ -38,7 +40,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
         //内容为空
-        if(!StrUtil.hasBlank(userAccount, userPassword, checkPassword)){
+        if(StrUtil.hasBlank(userAccount, userPassword, checkPassword)){
             return -1;
         }
         //用户名长度
@@ -125,6 +127,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         //用户脱敏
+        User safetyUser = getSafeUser(user);
+
+        //用户登录状态
+        request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
+
+
+
+        return safetyUser;
+    }
+
+
+    @Override
+    public User getSafeUser(User user){
         User safetyUser = new User();
         safetyUser.setId(user.getId());
         safetyUser.setUserAccount(user.getUserAccount());
@@ -136,12 +151,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetyUser.setCreateTime(user.getCreateTime());
         safetyUser.setUpdateTime(user.getUpdateTime());
         safetyUser.setUserGender(user.getUserGender());
-
-        //用户登录状态
-        request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
-
-
-
         return safetyUser;
     }
 

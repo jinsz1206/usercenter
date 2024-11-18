@@ -75,12 +75,14 @@ class UserServiceTest {
 
     @Test
     public void userInsert() {
-        String account = "1209990432";
-        String password = "jsz20031216";
-        String check = "jsz20031216";
+        String account = "12345678";
+        String password = "jsz123456";
+        String check = "jsz123456";
         Long result  = userService.usrRegister(account, password, check);
         Assertions.assertTrue(result>1);
     }
+
+
 
 
 }
