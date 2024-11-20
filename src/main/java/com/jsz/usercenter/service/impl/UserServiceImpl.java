@@ -140,6 +140,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public User getSafeUser(User user){
+        if (user == null) {
+            return null;
+        }
         User safetyUser = new User();
         safetyUser.setId(user.getId());
         safetyUser.setUserAccount(user.getUserAccount());
@@ -152,6 +155,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetyUser.setUpdateTime(user.getUpdateTime());
         safetyUser.setUserGender(user.getUserGender());
         return safetyUser;
+    }
+
+    @Override
+    public int userLogout(HttpServletRequest request) {
+        request.getSession().removeAttribute(USER_LOGIN_STATE);
+        return  1;
     }
 
 }
