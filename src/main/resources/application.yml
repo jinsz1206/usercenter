@@ -5,7 +5,8 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/jinsz
     username: root
-    password: 123456
+    # 家里笔记本是 328245  公式的是123456
+    password: 328245
   session:
     timeout: 86400
 server:
