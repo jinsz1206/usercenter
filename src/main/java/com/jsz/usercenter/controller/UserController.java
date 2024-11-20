@@ -37,7 +37,7 @@ public class UserController {
         return id;
     }
 
-    @PostMapping("/logion")
+    @PostMapping("/login")
     public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null){
             return null;
