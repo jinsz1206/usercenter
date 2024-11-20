@@ -50,6 +50,30 @@ public class UserController {
         return userService.userLogin(userAccount, userPassword,request);
     }
 
+    @GetMapping("/current")
+    public User getCurrentUser(HttpServletRequest request) {
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User currentUser = (User) userObj;
+        if (currentUser == null){
+            return null;
+        }
+        long userId = currentUser.getId();
+        //todo 检验合法
+        User user = userService.getById(userId);
+        return userService.getSafeUser(user);
+
+    }
+
+
+    @PostMapping("/logout")
+    public Integer userLogout( HttpServletRequest request) {
+        if (request == null){
+            return null;
+        }
+
+        return userService.userLogout(request);
+    }
+
 
     //管理用户接口
 
@@ -96,6 +120,8 @@ public class UserController {
         }
         return userService.removeById(id);
     }
+
+
 
 
 
