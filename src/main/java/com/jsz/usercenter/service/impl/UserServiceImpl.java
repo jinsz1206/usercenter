@@ -5,6 +5,8 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.jsz.usercenter.common.ErrorCode;
+import com.jsz.usercenter.exception.BusinessException;
 import com.jsz.usercenter.model.domain.User;
 import com.jsz.usercenter.service.UserService;
 import com.jsz.usercenter.mapper.UserMapper;
@@ -41,7 +43,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         //内容为空
         if(StrUtil.hasBlank(userAccount, userPassword, checkPassword)){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"参数为空");
         }
         //用户名长度
 //        if(StrUtil.length(userAccount) < 4){
@@ -50,18 +52,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         //密码长度
         if(StrUtil.length(userPassword) > 15 || StrUtil.length(userPassword) < 6){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户密码错误");
         }
 
 
         //账户名字不能包含特殊字符,6-12位数
         if(!Validator.isGeneral(userAccount,6,12)){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户账户错误");
         }
 
         //密码2次输入
         if (!StrUtil.equals(userPassword, checkPassword)) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码输入不一致");
         }
 
 
@@ -71,7 +73,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         long count = userMapper.selectCount(queryWrapper);
 
         if(count > 0){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号已存在");
         }
 
         //密码加密
@@ -83,7 +85,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserPassword(encryptPassWord);
         boolean saveResult = this.save(user);
         if(!saveResult){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户添加失败");
         }
         return user.getId();
     }
@@ -123,7 +125,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = userMapper.selectOne(queryWrapper);
         if(user == null){
             log.info("user login failed");
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号密码错误");
         }
 
         //用户脱敏
