@@ -4,6 +4,7 @@ import com.jsz.usercenter.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
 * @author ex_shengzhou.jin
@@ -39,6 +40,19 @@ public interface UserService extends IService<User> {
      */
     User getSafeUser(User user);
 
+    /**
+     * 用户登出
+     * @param request
+     * @return
+     */
     int userLogout(HttpServletRequest request);
+
+    /**
+     * 标签查询用户
+     * @param tagList
+     * @return
+     */
+    List<User> searchUsersByTags(List<String> tagList);
+    List<User> searchUsersByTagsBySQL(List<String> tagList);
 
 }

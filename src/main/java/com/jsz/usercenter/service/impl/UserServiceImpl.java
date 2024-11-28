@@ -1,10 +1,13 @@
 package com.jsz.usercenter.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.jsz.usercenter.common.ErrorCode;
 import com.jsz.usercenter.exception.BusinessException;
 import com.jsz.usercenter.model.domain.User;
@@ -15,6 +18,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.jsz.usercenter.contant.UserConstant.USER_LOGIN_STATE;
 
@@ -163,6 +170,54 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public int userLogout(HttpServletRequest request) {
         request.getSession().removeAttribute(USER_LOGIN_STATE);
         return  1;
+    }
+
+    /**
+     * 标签查询用户 by 内存
+     *
+     * @param tagList
+     * @return
+     */
+    @Override
+    public List<User> searchUsersByTags(List<String> tagList){
+        if (CollectionUtil.isEmpty(tagList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //内存查询
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        //查询所有用户
+        List<User> userList = userMapper.selectList(queryWrapper);
+        Gson gson = new Gson();
+        //内存中判断
+        return userList.stream().filter(user -> {
+            String tags = user.getTags();
+            if (StrUtil.isBlank(tags)) {
+                return false;
+            }
+            Set<String> tagNameSet = gson.fromJson(tags, new TypeToken<Set<String>>(){}.getType());
+            for (String tagName : tagList) {
+                if(!tagNameSet.contains(tagName)){
+                    return false;
+                }
+            }
+            return true;
+        }).map(this::getSafeUser).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<User> searchUsersByTagsBySQL(List<String> tagList) {
+
+        if (CollectionUtil.isEmpty(tagList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //数据库查询
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        //拼接查询 like ''
+        for (String tag : tagList) {
+            queryWrapper = queryWrapper.like("tags",tag);
+        }
+        List<User> users = userMapper.selectList(queryWrapper);
+        return users.stream().map(this::getSafeUser).collect(Collectors.toList());
     }
 
 }

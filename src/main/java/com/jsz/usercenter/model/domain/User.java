@@ -47,6 +47,11 @@ public class User implements Serializable {
     private String userName;
 
     /**
+     * 用户标签json
+     */
+    private String tags;
+
+    /**
      * 用户头像
      */
     private String userAvatar;
